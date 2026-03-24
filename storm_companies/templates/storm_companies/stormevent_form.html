@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ action }} Storm Event - Storm Aid</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { margin: 0 0 20px 0; color: #553c9a; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; color: #2d3748; }
+        input[type="text"], input[type="date"], input[type="email"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        textarea { height: 80px; resize: vertical; }
+        .btn-group { margin-top: 20px; display: flex; gap: 10px; }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary { background: #553c9a; color: white; }
+        .btn-primary:hover { background: #44337a; }
+        .btn-secondary { background: #e2e8f0; color: #4a5568; }
+        .btn-secondary:hover { background: #cbd5e0; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #553c9a;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <a href="{% url 'stormevent_list' %}" class="back-link">← Back to Storm Events</a>
+    <div class="form-card">
+        <h1>{{ action }} Storm Event</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="name">Event Name *</label>
+                <input type="text" id="name" name="name" value="{{ event.name|default:'' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="date">Date *</label>
+                <input type="date" id="date" name="date" value="{{ event.date|date:'Y-m-d'|default:'' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="severity">Severity *</label>
+                <select id="severity" name="severity" required>
+                    <option value="">Select severity...</option>
+                    <option value="minor" {% if event.severity == 'minor' %}selected{% endif %}>Minor</option>
+                    <option value="moderate" {% if event.severity == 'moderate' %}selected{% endif %}>Moderate</option>
+                    <option value="severe" {% if event.severity == 'severe' %}selected{% endif %}>Severe</option>
+                    <option value="catastrophic" {% if event.severity == 'catastrophic' %}selected{% endif %}>Catastrophic</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="affected_area">Affected Area *</label>
+                <input type="text" id="affected_area" name="affected_area" value="{{ event.affected_area|default:'' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description">{{ event.description|default:'' }}</textarea>
+            </div>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">{{ action }}</button>
+                <a href="{% url 'stormevent_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

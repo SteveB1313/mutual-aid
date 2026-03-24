@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployments - Storm Aid</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        header {
+            background: #2f855a;
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 { margin: 0; }
+        .subtitle { opacity: 0.9; margin-top: 5px; }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary { background: white; color: #2f855a; }
+        .btn-primary:hover { background: #edf2f7; }
+        .btn-secondary { background: #e2e8f0; color: #4a5568; margin-right: 10px; }
+        .btn-secondary:hover { background: #cbd5e0; }
+        .deployment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .deployment-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .deployment-title { font-size: 1.25rem; font-weight: bold; }
+        .card-actions { display: flex; gap: 8px; }
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.875rem;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .btn-edit { background: #c6f6d5; color: #276749; }
+        .btn-edit:hover { background: #9ae6b4; }
+        .btn-delete { background: #fed7d7; color: #c53030; }
+        .btn-delete:hover { background: #fc8181; }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .status-requested { background: #e2e8f0; color: #4a5568; }
+        .status-confirmed { background: #bee3f8; color: #2b6cb0; }
+        .status-en_route { background: #fefcbf; color: #975a16; }
+        .status-on_site { background: #c6f6d5; color: #276749; }
+        .status-completed { background: #9ae6b4; color: #22543d; }
+        .status-cancelled { background: #fed7d7; color: #c53030; }
+        .info-row { margin: 8px 0; color: #4a5568; }
+        .info-label { font-weight: 500; color: #2d3748; }
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #718096;
+            background: white;
+            border-radius: 8px;
+        }
+        .empty-state a { color: #2f855a; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #2f855a;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <a href="{% url 'home' %}" class="back-link">← Back to Companies</a>
+    <header>
+        <div>
+            <h1>Deployments</h1>
+            <p class="subtitle">Track company deployments to storm events</p>
+        </div>
+        <a href="{% url 'deployment_create' %}" class="btn btn-primary">+ Add Deployment</a>
+    </header>
+
+    {% if deployments %}
+    <div class="deployment-grid">
+        {% for deployment in deployments %}
+        <div class="deployment-card">
+            <div class="card-header">
+                <div class="deployment-title">{{ deployment.company.name }}</div>
+                <div class="card-actions">
+                    <a href="{% url 'deployment_update' deployment.pk %}" class="btn-sm btn-edit">Edit</a>
+                    <a href="{% url 'deployment_delete' deployment.pk %}" class="btn-sm btn-delete">Delete</a>
+                </div>
+            </div>
+            <span class="status status-{{ deployment.status }}">{{ deployment.get_status_display }}</span>
+            
+            <div class="info-row"><span class="info-label">Event:</span> {{ deployment.storm_event.name }}</div>
+            {% if deployment.deployed_from_city or deployment.deployed_from_state %}
+            <div class="info-row"><span class="info-label">Deploying from:</span> {{ deployment.deployed_from_city }}{% if deployment.deployed_from_city and deployment.deployed_from_state %}, {% endif %}{{ deployment.deployed_from_state }}</div>
+            {% endif %}
+            <div class="info-row"><span class="info-label">Requested:</span> {{ deployment.requested_at }}</div>
+            {% if deployment.confirmed_at %}
+            <div class="info-row"><span class="info-label">Confirmed:</span> {{ deployment.confirmed_at }}</div>
+            {% endif %}
+            {% if deployment.arrived_at %}
+            <div class="info-row"><span class="info-label">Arrived:</span> {{ deployment.arrived_at }}</div>
+            {% endif %}
+            {% if deployment.active_at %}
+            <div class="info-row"><span class="info-label">Active:</span> {{ deployment.active_at }}</div>
+            {% endif %}
+            {% if deployment.notes %}
+            <div class="info-row" style="margin-top: 10px;">{{ deployment.notes }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h2>No deployments recorded yet</h2>
+        <p><a href="{% url 'deployment_create' %}">Create your first deployment</a>.</p>
+    </div>
+    {% endif %}
+</body>
+</html>

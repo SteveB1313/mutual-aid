@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ action }} Deployment - Storm Aid</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { margin: 0 0 20px 0; color: #2f855a; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; color: #2d3748; }
+        input[type="text"], input[type="date"], input[type="datetime-local"], input[type="email"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        textarea { height: 80px; resize: vertical; }
+        .btn-group { margin-top: 20px; display: flex; gap: 10px; }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary { background: #2f855a; color: white; }
+        .btn-primary:hover { background: #276749; }
+        .btn-secondary { background: #e2e8f0; color: #4a5568; }
+        .btn-secondary:hover { background: #cbd5e0; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #2f855a;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            padding: 4px;
+        }
+        input[type="date"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'deployment_list' %}" class="back-link">← Back to Deployments</a>
+    <div class="form-card">
+        <h1>{{ action }} Deployment</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="company">Company *</label>
+                <select id="company" name="company" required>
+                    <option value="">Select company...</option>
+                    {% for company in companies %}
+                    <option value="{{ company.pk }}" {% if deployment.company_id == company.pk %}selected{% endif %}>{{ company.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="storm_event">Storm Event *</label>
+                <select id="storm_event" name="storm_event" required>
+                    <option value="">Select storm event...</option>
+                    {% for event in events %}
+                    <option value="{{ event.pk }}" {% if deployment.storm_event_id == event.pk %}selected{% endif %}>{{ event.name }} ({{ event.date }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="status">Status *</label>
+                <select id="status" name="status" required>
+                    <option value="requested" {% if deployment.status == 'requested' %}selected{% endif %}>Requested</option>
+                    <option value="confirmed" {% if deployment.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                    <option value="en_route" {% if deployment.status == 'en_route' %}selected{% endif %}>En Route</option>
+                    <option value="on_site" {% if deployment.status == 'on_site' %}selected{% endif %}>On Site</option>
+                    <option value="completed" {% if deployment.status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="cancelled" {% if deployment.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="deployed_from_city">Deploying From (City)</label>
+                <input type="text" id="deployed_from_city" name="deployed_from_city" value="{{ deployment.deployed_from_city|default:'' }}">
+            </div>
+            <div class="form-group">
+                <label for="deployed_from_state">Deploying From (State)</label>
+                <input type="text" id="deployed_from_state" name="deployed_from_state" value="{{ deployment.deployed_from_state|default:'' }}">
+            </div>
+            <div class="form-group">
+                <label for="confirmed_at">Confirmed At</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="date" name="confirmed_date" value="{{ deployment.confirmed_at|date:'Y-m-d'|default:'' }}" style="flex: 1;">
+                    <select name="confirmed_hour" style="flex: 0 0 70px;">
+                        <option value="">Hr</option>
+                        {% for h in hours %}<option value="{{ h }}" {% if deployment.confirmed_at and deployment.confirmed_at.hour == h %}selected{% endif %}>{{ h|stringformat:'02d' }}</option>{% endfor %}
+                    </select>
+                    <select name="confirmed_minute" style="flex: 0 0 70px;">
+                        <option value="">Min</option>
+                        {% for m in minutes %}<option value="{{ m }}" {% if deployment.confirmed_at and deployment.confirmed_at.minute == m %}selected{% endif %}>{{ m|stringformat:'02d' }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="arrived_at">Arrived At</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="date" name="arrived_date" value="{{ deployment.arrived_at|date:'Y-m-d'|default:'' }}" style="flex: 1;">
+                    <select name="arrived_hour" style="flex: 0 0 70px;">
+                        <option value="">Hr</option>
+                        {% for h in hours %}<option value="{{ h }}" {% if deployment.arrived_at and deployment.arrived_at.hour == h %}selected{% endif %}>{{ h|stringformat:'02d' }}</option>{% endfor %}
+                    </select>
+                    <select name="arrived_minute" style="flex: 0 0 70px;">
+                        <option value="">Min</option>
+                        {% for m in minutes %}<option value="{{ m }}" {% if deployment.arrived_at and deployment.arrived_at.minute == m %}selected{% endif %}>{{ m|stringformat:'02d' }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="active_at">Active At</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="date" name="active_date" value="{{ deployment.active_at|date:'Y-m-d'|default:'' }}" style="flex: 1;">
+                    <select name="active_hour" style="flex: 0 0 70px;">
+                        <option value="">Hr</option>
+                        {% for h in hours %}<option value="{{ h }}" {% if deployment.active_at and deployment.active_at.hour == h %}selected{% endif %}>{{ h|stringformat:'02d' }}</option>{% endfor %}
+                    </select>
+                    <select name="active_minute" style="flex: 0 0 70px;">
+                        <option value="">Min</option>
+                        {% for m in minutes %}<option value="{{ m }}" {% if deployment.active_at and deployment.active_at.minute == m %}selected{% endif %}>{{ m|stringformat:'02d' }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="notes">Notes</label>
+                <textarea id="notes" name="notes">{{ deployment.notes|default:'' }}</textarea>
+            </div>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">{{ action }}</button>
+                <a href="{% url 'deployment_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
