@@ -37,4 +37,4 @@ ENV DJANGO_SETTINGS_MODULE=mutualaid.settings
 
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "mutualaid.wsgi"]
