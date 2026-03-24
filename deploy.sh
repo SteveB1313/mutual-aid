@@ -7,12 +7,21 @@ CONTAINER_NAME="storm-aid"
 PORT=8000
 HOST_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-if [ -f "$HOST_DIR/.env" ]; then
-    echo "Loading environment from .env..."
-    set -a
-    source "$HOST_DIR/.env"
-    set +a
+# Create .env if it doesn't exist
+if [ ! -f "$HOST_DIR/.env" ]; then
+    echo "Creating .env file..."
+    cat > "$HOST_DIR/.env" << 'EOF'
+DJANGO_SECRET_KEY=change-this-secret-key-in-production
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+EOF
+    echo ".env created. Please review and update with your production values."
 fi
+
+# Load environment
+set -a
+source "$HOST_DIR/.env"
+set +a
 
 echo "Building Docker image..."
 docker build -t $IMAGE_NAME .
@@ -32,25 +41,21 @@ docker run -d \
     --restart unless-stopped \
     $IMAGE_NAME
 
-echo "Waiting for container to start..."
-sleep 2
-
 echo "Running migrations..."
 docker exec $CONTAINER_NAME python manage.py migrate
 
 echo "Collecting static files..."
 docker exec $CONTAINER_NAME python manage.py collectstatic --noinput
 
-echo "Creating StormAdmins group..."
 docker exec $CONTAINER_NAME python manage.py create_stormadmins_group 2>/dev/null || true
 
 echo ""
 echo "========================================"
 echo "Deployment complete!"
-echo "App running at: http://localhost:$PORT"
-echo "Admin panel: http://localhost:$PORT/admin"
+echo "App: http://localhost:$PORT"
+echo "Admin: http://localhost:$PORT/admin"
 echo ""
-echo "Create superuser:"
+echo "Create admin user:"
 echo "  docker exec -it $CONTAINER_NAME python manage.py createsuperuser"
 echo ""
 echo "Add user to StormAdmins:"
