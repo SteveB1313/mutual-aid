@@ -47,7 +47,8 @@ docker exec $CONTAINER_NAME python manage.py migrate
 echo "Collecting static files..."
 docker exec $CONTAINER_NAME python manage.py collectstatic --noinput
 
-docker exec $CONTAINER_NAME python manage.py create_stormadmins_group 2>/dev/null || true
+echo "Creating StormAdmins group..."
+docker exec $CONTAINER_NAME python manage.py create_stormadmins_group || echo "Warning: Could not create StormAdmins group"
 
 echo ""
 echo "========================================"

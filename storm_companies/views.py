@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def is_storm_admin(user):
-    return user.is_authenticated and user.groups.filter(name='StormAdmins').exists()
+    return user.is_authenticated and (user.is_superuser or user.groups.filter(name='StormAdmins').exists())
 
 
 def ratelimited_login(request):
